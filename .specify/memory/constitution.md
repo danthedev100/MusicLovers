@@ -1,50 +1,75 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# MusicLovers Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. MVP-First Artist Search Aggregator
+- The product must enable searching by artist name and display aggregated results from external sources.
+- Initial sources: YouTube (videos), SoundCloud (tracks). A single news/articles source (e.g., RSS or a news API) is sufficient for MVP.
+- Show titles, source, published date (if available), and a link out to the original content. Respect and preserve source attribution.
+- Store minimal state. Use ephemeral caching (up to 24 hours) to reduce duplicate external calls and improve responsiveness.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Simple, Stateless HTTP API
+- Expose a single read-only endpoint: `GET /search?artist=<name>` returning JSON.
+- Response schema (minimum): `[ { source, title, url, publishedAt?, type } ]`, where `type` ∈ { "video", "track", "news" }.
+- Handle errors per-source and return partial results with per-item `source` clearly identified. Do not fail the whole request when one provider errors.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Minimum Quality Gates
+- Provide a health endpoint: `GET /health` returns `{ status: "ok" }` when dependencies are reachable.
+- Add smoke tests that cover: successful search with stubbed providers, graceful handling of rate limits (429), and timeouts.
+- Implement basic request timeouts and exponential backoff for provider calls. Never exceed provider rate limits.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Compliance & Attribution
+- Use official APIs/feeds and comply with each provider's Terms of Service.
+- Do not store personal data. Only store query text and ephemeral cache content. Include source logos/names where required by the provider.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Operational Simplicity
+- Configuration strictly via environment variables (no checked-in secrets): `YOUTUBE_API_KEY`, `SOUNDCLOUD_CLIENT_ID` (or token), `NEWS_API_KEY`/`RSS_URLS`.
+- Provide structured logs with correlation identifiers and per-provider timing and error fields.
+- Semantic versioning. Breaking API changes require a major version bump and a brief migration note.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Minimal Functional Requirements
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- A search UI with a single artist input and a results view.
+- Results grouped or filterable by source, with an "All" view acceptable for MVP.
+- Pagination or "Load more" is acceptable; perfection is not required. Prioritize fast first result display (show partials as they arrive if feasible).
+- Basic empty/error states. Never show raw stack traces to users.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Development Workflow
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Keep the stack simple. Any web framework is acceptable; prioritize maintainability and clear separation between UI and API calls.
+- Require at least one code review approval before merging. CI runs lint + smoke tests.
+- Feature flags are optional; prefer simple configuration toggles for providers.
+
+## Technology Stack Preference
+
+- Honor the maintainer's preferred tech stack; do not override it by default.
+- When suggesting improvements, keep them optional, free-tier-friendly, and reversible with clear migration steps.
+- If no preference is provided, default to a simple, free/low-cost setup (server-rendered JS framework on a free tier, Node.js runtime, serverless/low-cost hosting, and a free-tier datastore such as SQLite or Postgres free tier).
+- Preferred stack (honored by default):
+  - Frontend: Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui.
+  - Auth: Clerk.
+  - Backend/data: Convex for backend logic and data; add Prisma with a relational database only where relational modeling/joins are required.
+  - Hosting: Vercel.
+- Cost guardrails: Operate within free tiers by default for development and initial production; do not add paid services without explicit approval.
+- Optional, free-tier-friendly improvements (non-mandatory):
+  - Use Next.js ISR, route handler caching, and streaming responses for faster perceived results.
+  - Leverage Vercel Edge Middleware for lightweight caching/throttling where appropriate.
+  - Schedule background refreshes for popular artists via Vercel Cron.
+  - Enforce provider API rate caps with exponential backoff and request deduplication.
+  - Keep analytics minimal and privacy-friendly; prefer tools with free tiers or disable by default.
+
+## Mobile-First Experience
+
+- Design mobile-first (320–390px) and progressively enhance to tablet and desktop.
+- Use responsive, fluid layouts and spacing by default; avoid fixed widths. Prefer Tailwind's mobile-first utilities.
+- Ensure tap targets ≥ 44×44px, adequate spacing, and thumb-reachable controls. Avoid hover-only interactions.
+- Meet accessibility: semantic HTML, labels for inputs, focus states, and WCAG AA color contrast.
+- Optimize for mobile performance: lazy-load embeds (YouTube/SoundCloud), optimize images via `next/image`, defer non-critical scripts, and minimize CLS.
+- Support reduced-motion preferences and a dark theme (shadcn/ui tokens) without blocking core UX.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution sets the minimum bar. Teams may add constraints but may not go below these requirements.
+- Any amendment must update the version below and note the change in the commit message. Ensure templates and examples reflect the change.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 0.1.1 | **Ratified**: 2025-09-16 | **Last Amended**: 2025-09-16
