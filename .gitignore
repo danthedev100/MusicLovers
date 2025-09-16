@@ -1,0 +1,39 @@
+# Node / JS
+node_modules/
+.pnpm-store/
+npm-debug.log*
+yarn-debug.log*
+*.tsbuildinfo
+
+# Next.js / Web
+.next/
+out/
+.swc/
+.swr/
+.cache/
+dist/
+build/
+coverage/
+
+# Turborepo / Monorepo
+.turbo/
+
+# Expo / React Native (if/when you add mobile)
+.expo/
+android/.gradle/
+android/app/build/
+ios/Pods/
+ios/build/
+
+# Env & platform
+.env*
+.vercel/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# (Optional) editor-specific junk
+.cursor/
